@@ -1,53 +1,56 @@
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
+import seaborn as sns
+from matplotlib.widgets import Slider, CheckButtons
 
-df = pd.read_csv("dataset.csv", encoding="utf-8", sep=";")
-
-def make_plot(year):
-    print("Selected Year:", year)
-    sns.set(style='whitegrid')
-    df = pd.read_csv("dataset.csv", encoding="utf-8", sep=";")
-    
-    # Filter data based on the selected year
-    df_year = df[df['Year'] == year]
-    print("Filtered Data:")
-    print(df_year.head())
-    
-    country_dfs = {value: df_year.loc[df_year['Country'] == value] for value in df_year['Country'].unique()}
-    country_mean_docs_and_citations = {country: [country_dfs[country]['Documents'].mean(), country_dfs[country]['Citations'].mean()] for country in country_dfs.keys()}
-    mean_df = pd.DataFrame.from_dict(country_mean_docs_and_citations, orient='index', columns=['Mean Documents', 'Mean Citations'])
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.scatterplot(x='Mean Documents', y='Mean Citations', data=mean_df, hue=mean_df.index, ax=ax)
-
-    for country, (mean_docs, mean_citations) in mean_df.iterrows():
-        ax.annotate(country, (mean_docs, mean_citations), textcoords="offset points", xytext=(0,10), ha='center')
-
-    ax.set_title(f'Mean Documents vs Mean Citations for Each Country ({year})')
-    ax.set_xlabel('Mean Documents')
-    ax.set_ylabel('Mean Citations')
-    ax.legend([], [], frameon=False)
-    ax.grid(True)
-    plt.tight_layout()
-    return fig
+# Load the CSV data
+data = pd.read_csv("dataset.csv", delimiter=";" ,decimal=',')
 
 
-from matplotlib.widgets import Slider
+def first_plot():
+    # Calculate mean documents and citations per country per year
+    mean_data = data.groupby(["Year", "Country"]).mean().reset_index()
 
-def update_plot(val):
-    year = int(year_slider.val)
-    fig = make_plot(year)
-    plt.draw()
+    # Initialize the seaborn style
+    sns.set(style="whitegrid")
+    # Create a color map for countries
+    unique_countries = mean_data['Country'].unique()
+    country_colors = sns.color_palette("Set2", len(unique_countries))
+    country_color_map = {country: color for country, color in zip(unique_countries, country_colors)}
 
-# Create initial plot
-initial_year = 2015
-fig = make_plot(initial_year)
+    # Create a function to update the plot based on the selected year
+    def update(val):
+        year = int(slider.val)
+        selected_data = mean_data[mean_data["Year"] == year]
+        ax.clear()
+        scatter = sns.scatterplot(x="Documents", y="Citations", data=selected_data, hue="Country", ax=ax, palette=country_color_map, legend=False)
+        ax.set_xlabel("Mean Documents")
+        ax.set_ylabel("Mean Citations")
+        ax.set_title(f"Mean Documents vs Mean Citations per Country in {year}")
 
-# Add slider for year selection
-slider_ax = plt.axes([0.1, 0.01, 0.8, 0.03])
-year_slider = Slider(slider_ax, 'Year', df['Year'].min(), df['Year'].max(), valinit=initial_year, valstep=1)
-year_slider.on_changed(update_plot)
+        # Annotate each point with the country name if the checkbox is checked
+        if show_labels.get_status()[0]:
+            for _, row in selected_data.iterrows():
+                ax.annotate(row["Country"], (row["Documents"], row["Citations"]), textcoords="offset points", xytext=(0,10), ha='center')
+        else:
+            scatter.legend([], [], frameon=False)
+        fig.canvas.draw_idle()
 
-plt.show()
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    checkbox_ax = plt.axes([0.1, 0.03, 0.15, 0.03])
+    show_labels = CheckButtons(checkbox_ax, ['Show Labels'], [False])
+    show_labels.on_clicked(update)
+    # Create a slider for selecting the year
+    slider_ax = plt.axes([0.1, 0.0, 0.8, 0.03])
+    slider = Slider(slider_ax, 'Year', data['Year'].min(), data['Year'].max(), valinit=data['Year'].min(), valstep=1)
+    slider.on_changed(update)
+
+  
+    update(None)
+
+    plt.show()
+
+
+first_plot()
