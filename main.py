@@ -139,8 +139,7 @@ def second_plot():
     plt.show()
 
 
-#first_plot()
-#second_plot()
+
 place_legend = True
 def third_plot():
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
@@ -202,8 +201,6 @@ def third_plot():
     plt.show()
 
 
-#third_plot()
-
 
 def fourth_plot():
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
@@ -263,6 +260,11 @@ def fourth_plot():
 
     plt.show()
 
+
+
+first_plot()
+second_plot()
+third_plot()
 fourth_plot()
 
 
