@@ -11,7 +11,8 @@ Ce projet Streamlit est conçu pour analyser et visualiser les données sur les 
 
 ## Exigences
 
-- Python 3.x
+- Python 3.12
+- Poetry
 - Streamlit
 - Pandas
 - Geopandas
