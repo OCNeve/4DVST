@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "4dvst"
+name = "dvst"
 version = "0.1.0"
 description = "4DVST project for supinfo"
 authors = ["Olivier NEVE"]
@@ -14,6 +14,7 @@ ipywidgets = "^8.1.2"
 plotly = "^5.20.0"
 numpy = "^1.26.4"
 geopandas = "^0.14.3"
+streamlit = "^1.32.2"
 
 
 [build-system]
